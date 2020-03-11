@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Card game</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="saved_score_key">saved_score_key</string>
+    <string name="saved_card_key">saved_card_key</string>
+    <string name="saved_deck_id_key">saved_deck_id_key</string>
+    <string name="saved_image_key">saved_image_key</string>
 </resources>

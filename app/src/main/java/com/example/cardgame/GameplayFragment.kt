@@ -53,7 +53,6 @@ class GameplayFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         theGameHasEnded = false
-        // Inflate the layout for this fragment
         val rootView = inflater.inflate(R.layout.fragment_gameplay, container,
             false)
         instantiateElements(rootView)
@@ -77,7 +76,6 @@ class GameplayFragment : Fragment() {
                 val tvScore = rootView.findViewById<TextView>(R.id.tvScore)
                 Picasso.get().load(currentImage).into(imgView)
                 tvScore.text = currentScore.toString()
-                //returnCard = cardValues.indexOf(cardValue)
         }
         else {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
@@ -91,11 +89,8 @@ class GameplayFragment : Fragment() {
     }
 
     private fun instantiateElements(root : View) {
-// toDo: da li sme ove da se instancira zbog resume-a koji ce ponovo da pokrene onCreate?
-//        currentScore = 0
         val tv = root.findViewById<TextView>(R.id.tvScore)
         tv.text = currentScore.toString()
-        val ivCard = root.findViewById<ImageView>(R.id.ivCurrentCard)
         val ivDeck = root.findViewById<ImageView>(R.id.ivDeckOfCards)
         ivDeck.setImageResource(R.drawable.back_of_a_card)
 
@@ -153,7 +148,6 @@ class GameplayFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if(response.isSuccessful) {
                     val result = response.body()!!.string()
-                    //Log.d(TAG, "result = "+result)
                     val strRes = Gson().fromJson<ResponseForNewCard>(result,
                         ResponseForNewCard::class.java)
                     val image = strRes.cards[0].image
@@ -173,7 +167,6 @@ class GameplayFragment : Fragment() {
                             Picasso.get().load(image).into(imgView)
                             val tv = root!!.findViewById<TextView>(R.id.tvScore)
                             tv.text = currentScore.toString()
-                            //returnCard = cardValues.indexOf(cardValue)
                         }
                     }
                     else endGame()
@@ -201,14 +194,12 @@ class GameplayFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if(response.isSuccessful) {
                     val result = response.body()!!.string()
-                    //Log.d(TAG, "result = "+result)
                     val strRes = Gson().fromJson<ResponseForNewCard>(result,
                         ResponseForNewCard::class.java)
                     val image = strRes.cards[0].image
                     currentImage = image
                     val cardValue = strRes.cards[0].value
                     returnCard = cardValues.indexOf(cardValue)
-                    //Log.d(TAG, "index of card value = $returnCard")
 
                     val nextCard = returnCard
                     Log.d(TAG, "${cardValues[nextCard]} > ${cardValues[currentCard]}")
@@ -221,7 +212,6 @@ class GameplayFragment : Fragment() {
                             Picasso.get().load(image).into(imgView)
                             val tv = root!!.findViewById<TextView>(R.id.tvScore)
                             tv.text = currentScore.toString()
-                            //returnCard = cardValues.indexOf(cardValue)
                         }
                     }
                     else endGame()
@@ -251,17 +241,14 @@ class GameplayFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if(response.isSuccessful) {
                     val result = response.body()!!.string()
-                    //Log.d(TAG, "result = "+result)
                     val strRes = Gson().fromJson<ResponseForNewCard>(result,
                         ResponseForNewCard::class.java)
                     val image = strRes.cards[0].image
                     val cardValue = strRes.cards[0].value
                     returnCard = cardValues.indexOf(cardValue)
-                    //Log.d(TAG, "index of card value = $returnCard")
                     activity?.runOnUiThread {
                         val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
                         Picasso.get().load(image).into(imgView)
-                        //returnCard = cardValues.indexOf(cardValue)
                     }
                 }
                 else {
@@ -314,12 +301,6 @@ class GameplayFragment : Fragment() {
 
         Log.d(TAG, "onPause")
     }
-
-    //toDO
-    // zapamti rezultat kartu i deckId u bundle-u u onDestroy metodi
-
-
-
 
 
     //toDo STAVI OVE KLASE U MODEL FOLDER
@@ -398,12 +379,10 @@ class GameplayFragment : Fragment() {
                     currentImage = image
                     val cardValue = strRes.cards[0].value
                     currentCard = cardValues.indexOf(cardValue)
-                    activity?.runOnUiThread(object: Runnable {
-                        override fun run() {
-                            val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
-                            Picasso.get().load(image).into(imgView)
-                        }
-                    })
+                    activity?.runOnUiThread {
+                        val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
+                        Picasso.get().load(image).into(imgView)
+                    }
                 }
                 else {
                     Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")

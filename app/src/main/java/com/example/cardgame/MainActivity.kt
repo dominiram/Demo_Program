@@ -12,8 +12,7 @@ import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private var isContinueClickable = false
-    val manager = supportFragmentManager
+    private val manager = supportFragmentManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,9 +26,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun newGame(view: View) {
-        val btnContinue = findViewById<Button>(R.id.btnContinue)
-        btnContinue.isClickable = true
-        isContinueClickable = true
         val transaction = manager.beginTransaction()
         val fragment = GameplayFragment().apply {
             val bundle = Bundle()

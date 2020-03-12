@@ -38,18 +38,23 @@ class MainFragment : Fragment() {
     }
 
     private fun instantiateElements(rootView : View) {
-        val btnContinue = rootView.findViewById<Button>(R.id.btnContinue)
-        btnContinue.isClickable = Intent().hasExtra(GAME_SCORE_KEY) &&
-           Intent().hasExtra(DECK_ID_KEY) && Intent().hasExtra(CURRENT_CARD_KEY)
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+            if(it.getInt(getString(R.string.saved_score_key), 0) == 0 ||
+                it.getInt(getString(R.string.saved_card_key), -1) == -1) {
+                Log.d(TAG, "Elementi su instancirani, defoltnim vrednostima")
+                val btnContinue = rootView.findViewById<Button>(R.id.btnContinue)
+                btnContinue?.isClickable = false
+            }
+            else {
+                Log.d(TAG, "Elementi NEMAJU def. vrednosti")
+                val btnContinue = rootView.findViewById<Button>(R.id.btnContinue)
+                btnContinue?.isClickable = true
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        //toDo OVDE SE ENEJBLUJE DUGME
-
         Log.d(TAG, "onResume")
-        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
-                val btnContinue = root?.findViewById<Button>(R.id.btnContinue)
-        btnContinue?.isClickable = true
     }
 }

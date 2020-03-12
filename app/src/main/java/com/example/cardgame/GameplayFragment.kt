@@ -29,6 +29,7 @@ import kotlin.math.log
  */
 class GameplayFragment : Fragment() {
 
+    private var theGameHasEnded = false
     private val DECK_ID_KEY = "current_deck_id_in_the_game"
     private val CURRENT_CARD_KEY = "current_card_in_the_game"
     private val GAME_SCORE_KEY = "current_game_score"
@@ -51,6 +52,7 @@ class GameplayFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        theGameHasEnded = false
         // Inflate the layout for this fragment
         val rootView = inflater.inflate(R.layout.fragment_gameplay, container,
             false)
@@ -77,7 +79,12 @@ class GameplayFragment : Fragment() {
                 tvScore.text = currentScore.toString()
                 //returnCard = cardValues.indexOf(cardValue)
         }
-        else createNewDeck(rootView)
+        else {
+            activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+                it.edit().clear().commit()
+            }
+            createNewDeck(rootView)
+        }
         root = rootView
 
         return rootView
@@ -156,7 +163,7 @@ class GameplayFragment : Fragment() {
                     //Log.d(TAG, "index of card value = $returnCard")
 
                     val nextCard = returnCard
-                    Log.d(TAG, "$nextCard < $currentCard")
+                    Log.d(TAG, "${cardValues[nextCard]} < ${cardValues[currentCard]}")
                     if(nextCard < currentCard) {
                         currentCard = nextCard
                         currentScore++
@@ -204,7 +211,7 @@ class GameplayFragment : Fragment() {
                     //Log.d(TAG, "index of card value = $returnCard")
 
                     val nextCard = returnCard
-                    Log.d(TAG, "$nextCard > $currentCard")
+                    Log.d(TAG, "${cardValues[nextCard]} > ${cardValues[currentCard]}")
                     if(nextCard > currentCard) {
                         currentCard = nextCard
                         currentScore++
@@ -229,6 +236,7 @@ class GameplayFragment : Fragment() {
         })
     }
 
+    //toDo izbrisi ovu metodu
     private fun callApiForNextCard(root: View): Int {
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
@@ -265,7 +273,15 @@ class GameplayFragment : Fragment() {
     }
 
     fun endGame() {
-        var bundle = Bundle()
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+            it.edit().putInt(getString(R.string.saved_card_key), -1)
+            it.edit().putInt(getString(R.string.saved_score_key), 0)
+            it.edit().commit()
+//            it.edit().clear().commit()
+            Log.d(TAG, "sharedPrefs deleted from endGame")
+        }
+        theGameHasEnded = true
+        val bundle = Bundle()
         bundle.putInt(GAME_SCORE_KEY, currentScore)
 
         activity?.supportFragmentManager?.popBackStack()
@@ -275,31 +291,30 @@ class GameplayFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-
-        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            with (it.edit()) {
-                putInt(getString(R.string.saved_score_key), currentScore)
-                putInt(getString(R.string.saved_card_key), currentCard)
-                putString(getString(R.string.saved_deck_id_key), deckId)
-                putString(getString(R.string.saved_image_key), currentImage)
-                commit()
+        if(!theGameHasEnded) {
+            activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+                with (it.edit()) {
+                    putInt(getString(R.string.saved_score_key), currentScore)
+                    putInt(getString(R.string.saved_card_key), currentCard)
+                    putString(getString(R.string.saved_deck_id_key), deckId)
+                    putString(getString(R.string.saved_image_key), currentImage)
+                    commit()
+                }
+            }
+        }
+        else {
+            activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+//                it.edit().putInt(getString(R.string.saved_card_key), -1)
+//                it.edit().putInt(getString(R.string.saved_score_key), 0)
+//                it.edit().commit()
+            it.edit().clear().commit()
+                Log.d(TAG, "sharedPrefs deleted from endGame")
             }
         }
 
         Log.d(TAG, "onPause")
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        Log.d(TAG, "onResume")
-//
-//
-//        activity?.getPreferences(Context.MODE_PRIVATE)?.let { sharedPref ->
-//            currentScore = sharedPref.getInt(getString(R.string.saved_score_key), 0)
-//            currentCard = sharedPref.getInt(getString(R.string.saved_card_key), -1)
-//            deckId = sharedPref.getString(getString(R.string.saved_deck_id_key), "a").toString()
-//        }
-//    }
     //toDO
     // zapamti rezultat kartu i deckId u bundle-u u onDestroy metodi
 

@@ -1,10 +1,8 @@
 package com.example.cardgame
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Display
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,16 +10,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.IntegerRes
-import androidx.core.text.parseAsHtml
 import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.fragment_gameplay.*
 import okhttp3.*
 import java.io.IOException
-import kotlin.math.log
 
 /**
  * A simple [Fragment] subclass.
@@ -176,7 +170,6 @@ class GameplayFragment : Fragment() {
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
         val request = Request.Builder().url(deckApi).build()
-
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
@@ -216,39 +209,6 @@ class GameplayFragment : Fragment() {
                 }
             }
         })
-    }
-
-    //toDo I'll probably delete this method
-    private fun callApiForNextCard(root: View): Int {
-        val client = OkHttpClient()
-        val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
-        val request = Request.Builder().url(deckApi).build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if(response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseForNewCard>(result,
-                        ResponseForNewCard::class.java)
-                    val image = strRes.cards[0].image
-                    val cardValue = strRes.cards[0].value
-                    returnCard = Consts.indexOf(cardValue)
-                    activity?.runOnUiThread {
-                        val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
-                        Picasso.get().load(image).into(imgView)
-                    }
-                }
-                else {
-                    Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")
-                }
-            }
-        })
-        return returnCard
     }
 
     fun endGame() {
@@ -351,6 +311,7 @@ class GameplayFragment : Fragment() {
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/$id/draw/?count=1"
         val request = Request.Builder().url(deckApi).build()
+
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
@@ -376,5 +337,38 @@ class GameplayFragment : Fragment() {
                 }
             }
         })
+    }
+
+    //toDo I'll probably delete this method
+    private fun callApiForNextCard(root: View): Int {
+        val client = OkHttpClient()
+        val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
+        val request = Request.Builder().url(deckApi).build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if(response.isSuccessful) {
+                    val result = response.body()!!.string()
+                    val strRes = Gson().fromJson<ResponseForNewCard>(result,
+                        ResponseForNewCard::class.java)
+                    val image = strRes.cards[0].image
+                    val cardValue = strRes.cards[0].value
+                    returnCard = Consts.indexOf(cardValue)
+                    activity?.runOnUiThread {
+                        val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
+                        Picasso.get().load(image).into(imgView)
+                    }
+                }
+                else {
+                    Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")
+                }
+            }
+        })
+        return returnCard
     }
 }

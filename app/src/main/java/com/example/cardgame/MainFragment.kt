@@ -14,10 +14,7 @@ import com.example.cardgame.utils.Consts
 class MainFragment : Fragment() {
 
     private var root: View? = null
-    private val DECK_ID_KEY = "current_deck_id_in_the_game"
-    private val CURRENT_CARD_KEY = "current_card_in_the_game"
-    private val GAME_SCORE_KEY = "current_game_score"
-    var isContinueClickable = false
+   var isContinueClickable = false
     private val TAG = "Fragment Main"
 
     override fun onCreate(savedInstanceState: Bundle?) {

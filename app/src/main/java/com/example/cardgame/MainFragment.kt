@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import com.example.cardgame.utils.Consts
 
 class MainFragment : Fragment() {
 
@@ -39,8 +40,8 @@ class MainFragment : Fragment() {
 
     private fun instantiateElements(rootView : View) {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            if(it.getInt(getString(R.string.saved_score_key), 0) == 0 ||
-                it.getInt(getString(R.string.saved_card_key), -1) == -1) {
+            if(it.getInt(Consts.SAVED_SCORE_KEY, 0) == 0 ||
+                it.getInt(Consts.SAVED_CARD_KEY, -1) == -1) {
                 Log.d(TAG, "Elementi su instancirani, defoltnim vrednostima")
                 val btnContinue = rootView.findViewById<Button>(R.id.btnContinue)
                 btnContinue?.isClickable = false

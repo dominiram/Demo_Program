@@ -14,6 +14,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.IntegerRes
 import androidx.core.text.parseAsHtml
+import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.squareup.picasso.Picasso
@@ -30,14 +31,10 @@ import kotlin.math.log
 class GameplayFragment : Fragment() {
 
     private var theGameHasEnded = false
-    private val DECK_ID_KEY = "current_deck_id_in_the_game"
-    private val CURRENT_CARD_KEY = "current_card_in_the_game"
     private val GAME_SCORE_KEY = "current_game_score"
     private var currentImage = ""
     private var returnCard = -1
     private var root: View? = null
-    private val cardValues = arrayOf("2","3","4","5","6","7","8","9","10","JACK",
-        "QUEEN", "KING", "ACE")
     private var deckId = ""
     private var currentScore = 0
     private var currentCard = -1
@@ -60,11 +57,11 @@ class GameplayFragment : Fragment() {
         if(arguments != null && arguments!!.getBoolean("ContinueTheGame")) {
             activity?.getPreferences(Context.MODE_PRIVATE).let {
                 if (it != null) {
-                    currentScore = it.getInt(getString(R.string.saved_score_key), 0)
-                    currentCard = it.getInt(getString(R.string.saved_card_key), -1)
-                    deckId = it.getString(getString(R.string.saved_deck_id_key), "a")
+                    currentScore = it.getInt(Consts.SAVED_SCORE_KEY, 0)
+                    currentCard = it.getInt(Consts.SAVED_CARD_KEY, -1)
+                    deckId = it.getString(Consts.SAVED_DECK_ID, "a")
                         .toString()
-                    currentImage = it.getString(getString(R.string.saved_image_key), "a")
+                    currentImage = it.getString(Consts.SAVED_IMAGE_KEY, "a")
                         .toString()
                     Log.d(TAG, "current image = $currentImage")
                     Log.d(TAG, "current score = $currentScore")
@@ -95,11 +92,7 @@ class GameplayFragment : Fragment() {
         ivDeck.setImageResource(R.drawable.back_of_a_card)
 
         val btnH = root.findViewById<Button>(R.id.btnHigher)
-        btnH.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                higherCard(root)
-            }
-        })
+        btnH.setOnClickListener { higherCard(root) }
 
         val btnL = root.findViewById<Button>(R.id.btnLower)
         btnL.setOnClickListener(object : View.OnClickListener {
@@ -117,7 +110,7 @@ class GameplayFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
-                Log.d(TAG, "REQUEST FAILED! " + e.printStackTrace())
+                Log.d(TAG, "REQUEST FAILED! ", e)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -142,7 +135,7 @@ class GameplayFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!" + e.printStackTrace())
+                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -153,11 +146,10 @@ class GameplayFragment : Fragment() {
                     val image = strRes.cards[0].image
                     currentImage = image
                     val cardValue = strRes.cards[0].value
-                    returnCard = cardValues.indexOf(cardValue)
-                    //Log.d(TAG, "index of card value = $returnCard")
+                    returnCard = Consts.indexOf(cardValue)
 
                     val nextCard = returnCard
-                    Log.d(TAG, "${cardValues[nextCard]} < ${cardValues[currentCard]}")
+                    Log.d(TAG, "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}")
                     if(nextCard < currentCard) {
                         currentCard = nextCard
                         currentScore++
@@ -188,7 +180,7 @@ class GameplayFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!" + e.printStackTrace())
+                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -199,10 +191,10 @@ class GameplayFragment : Fragment() {
                     val image = strRes.cards[0].image
                     currentImage = image
                     val cardValue = strRes.cards[0].value
-                    returnCard = cardValues.indexOf(cardValue)
+                    returnCard = Consts.indexOf(cardValue)
 
                     val nextCard = returnCard
-                    Log.d(TAG, "${cardValues[nextCard]} > ${cardValues[currentCard]}")
+                    Log.d(TAG, "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}")
                     if(nextCard > currentCard) {
                         currentCard = nextCard
                         currentScore++
@@ -226,7 +218,7 @@ class GameplayFragment : Fragment() {
         })
     }
 
-    //toDo izbrisi ovu metodu
+    //toDo I'll probably delete this method
     private fun callApiForNextCard(root: View): Int {
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
@@ -235,7 +227,7 @@ class GameplayFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!" + e.printStackTrace())
+                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -245,7 +237,7 @@ class GameplayFragment : Fragment() {
                         ResponseForNewCard::class.java)
                     val image = strRes.cards[0].image
                     val cardValue = strRes.cards[0].value
-                    returnCard = cardValues.indexOf(cardValue)
+                    returnCard = Consts.indexOf(cardValue)
                     activity?.runOnUiThread {
                         val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
                         Picasso.get().load(image).into(imgView)
@@ -261,10 +253,8 @@ class GameplayFragment : Fragment() {
 
     fun endGame() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            it.edit().putInt(getString(R.string.saved_card_key), -1)
-            it.edit().putInt(getString(R.string.saved_score_key), 0)
-            it.edit().commit()
-//            it.edit().clear().commit()
+            it.edit().putInt(Consts.SAVED_CARD_KEY, -1).commit()
+            it.edit().putInt(Consts.SAVED_SCORE_KEY, 0).commit()
             Log.d(TAG, "sharedPrefs deleted from endGame")
         }
         theGameHasEnded = true
@@ -273,7 +263,7 @@ class GameplayFragment : Fragment() {
 
         activity?.supportFragmentManager?.popBackStack()
         //toDo
-        // Ako je u top 10 skorova sacuvaj ga!
+        // Save the score if it's in top 10
     }
 
     override fun onPause() {
@@ -281,20 +271,17 @@ class GameplayFragment : Fragment() {
         if(!theGameHasEnded) {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
                 with (it.edit()) {
-                    putInt(getString(R.string.saved_score_key), currentScore)
-                    putInt(getString(R.string.saved_card_key), currentCard)
-                    putString(getString(R.string.saved_deck_id_key), deckId)
-                    putString(getString(R.string.saved_image_key), currentImage)
+                    putInt(Consts.SAVED_SCORE_KEY, currentScore)
+                    putInt(Consts.SAVED_CARD_KEY, currentCard)
+                    putString(Consts.SAVED_DECK_ID, deckId)
+                    putString(Consts.SAVED_IMAGE_KEY, currentImage)
                     commit()
                 }
             }
         }
         else {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-//                it.edit().putInt(getString(R.string.saved_card_key), -1)
-//                it.edit().putInt(getString(R.string.saved_score_key), 0)
-//                it.edit().commit()
-            it.edit().clear().commit()
+                it.edit().clear().commit()
                 Log.d(TAG, "sharedPrefs deleted from endGame")
             }
         }
@@ -303,7 +290,7 @@ class GameplayFragment : Fragment() {
     }
 
 
-    //toDo STAVI OVE KLASE U MODEL FOLDER
+    //toDo Put these classes in a separate folder
     data class ResponseNewDeck (
         @field:SerializedName("success")
         val success: Boolean,
@@ -367,7 +354,7 @@ class GameplayFragment : Fragment() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!" + e.printStackTrace())
+                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -378,7 +365,7 @@ class GameplayFragment : Fragment() {
                     val image = strRes.cards[0].image
                     currentImage = image
                     val cardValue = strRes.cards[0].value
-                    currentCard = cardValues.indexOf(cardValue)
+                    currentCard = Consts.indexOf(cardValue)
                     activity?.runOnUiThread {
                         val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
                         Picasso.get().load(image).into(imgView)

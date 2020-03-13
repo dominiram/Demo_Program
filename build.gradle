@@ -25,6 +25,8 @@ allprojects {
 }
 
 ext {
+    room_version = '2.2.4'
+    lifecycle_version = '2.2.0'
     appcompatVersion = '1.1.0'
     coreVersion = '1.2.0'
     constraintLayoutVersion = '1.1.3'

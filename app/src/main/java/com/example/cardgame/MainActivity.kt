@@ -8,16 +8,20 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.example.cardgame.utils.ScoreViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private val manager = supportFragmentManager
+    private var scoreViewModel: ScoreViewModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        scoreViewModel = ViewModelProvider(this).get(ScoreViewModel::class.java)
         val transaction = manager.beginTransaction()
         val fragment = MainFragment()
         transaction.replace(R.id.fragment_holder, fragment)

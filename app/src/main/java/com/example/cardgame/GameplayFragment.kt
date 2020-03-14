@@ -14,6 +14,7 @@ import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.squareup.picasso.Picasso
+import com.wajahatkarim3.easyflipview.EasyFlipView
 import okhttp3.*
 import java.io.IOException
 
@@ -149,8 +150,22 @@ class GameplayFragment : Fragment() {
                         currentScore++
 
                         activity?.runOnUiThread {
+                            val imgBack = root!!.findViewById<ImageView>(R.id.ivCurrentCardBack)
                             val imgView = root!!.findViewById<ImageView>(R.id.ivCurrentCard)
+                            val easyFlipView = root!!.findViewById<EasyFlipView>(R.id.easyFlipView)
+
+                            Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
+
+                            easyFlipView.flipDuration=500
+                            easyFlipView.setFlipTypeFromLeft()
+                            easyFlipView.flipTheView(true)
+
+                            easyFlipView.flipDuration=2000
+                            easyFlipView.setFlipTypeFromLeft()
+                            easyFlipView.flipTheView(true)
+
                             Picasso.get().load(image).into(imgView)
+
                             val tv = root!!.findViewById<TextView>(R.id.tvScore)
                             tv.text = currentScore.toString()
                         }
@@ -193,8 +208,22 @@ class GameplayFragment : Fragment() {
                         currentScore++
 
                         activity?.runOnUiThread {
+                            val imgBack = root!!.findViewById<ImageView>(R.id.ivCurrentCardBack)
                             val imgView = root!!.findViewById<ImageView>(R.id.ivCurrentCard)
+                            val easyFlipView = root!!.findViewById<EasyFlipView>(R.id.easyFlipView)
+
+                            Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
+
+                            easyFlipView.flipDuration=500
+                            easyFlipView.setFlipTypeFromLeft()
+                            easyFlipView.flipTheView(true)
+
+                            easyFlipView.flipDuration=2000
+                            easyFlipView.setFlipTypeFromLeft()
+                            easyFlipView.flipTheView(true)
+
                             Picasso.get().load(image).into(imgView)
+
                             val tv = root!!.findViewById<TextView>(R.id.tvScore)
                             tv.text = currentScore.toString()
                         }

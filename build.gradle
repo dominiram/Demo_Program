@@ -36,6 +36,7 @@ ext {
     gsonVersion = '2.8.5'
     okHttpVersion = '3.10.0'
     legacySupportVersion = '1.0.0'
+    easyFlipViewVersion = '2.1.2'
 }
 
 task clean(type: Delete) {

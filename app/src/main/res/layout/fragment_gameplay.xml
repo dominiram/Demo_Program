@@ -18,16 +18,39 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/ivCurrentCard"
-        android:layout_width="150dp"
-        android:layout_height="250dp"
+    <com.wajahatkarim3.easyflipview.EasyFlipView
+        android:id="@+id/easyFlipView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_card_normal"
         android:layout_marginLeft="@dimen/margin_card_normal"
         android:layout_marginBottom="@dimen/margin_card_big"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:flipEnabled="true"
+        app:flipDuration="500"
+        app:flipType="horizontal"
+        >
+
+        <ImageView
+            android:id="@+id/ivCurrentCardBack"
+            android:src="@drawable/back_of_a_card"
+            android:layout_width="150dp"
+            android:layout_height="250dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivCurrentCard"
+            android:layout_width="150dp"
+            android:layout_height="250dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </com.wajahatkarim3.easyflipview.EasyFlipView>
 
     <ImageView
         android:id="@+id/ivDeckOfCards"
@@ -49,7 +72,7 @@
         android:layout_marginTop="@dimen/margin_btb_top"
         android:text="Lower"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivCurrentCard" />
+        app:layout_constraintTop_toBottomOf="@+id/easyFlipView" />
 
     <Button
         android:id="@+id/btnHigher"

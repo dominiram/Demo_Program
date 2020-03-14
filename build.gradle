@@ -37,6 +37,8 @@ ext {
     okHttpVersion = '3.10.0'
     legacySupportVersion = '1.0.0'
     easyFlipViewVersion = '2.1.2'
+    rxJavaVersion = '2.1.16'
+    rxAndroidVersion = '2.0.2'
 }
 
 task clean(type: Delete) {

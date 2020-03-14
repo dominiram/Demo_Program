@@ -38,5 +38,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$testExitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     implementation "com.squareup.picasso:picasso:$picassoVersion"
-    implementation "com.wajahatkarim3.EasyFlipView:EasyFlipView:2.1.2"
+    implementation "com.wajahatkarim3.EasyFlipView:EasyFlipView:$easyFlipViewVersion"
+    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
 }

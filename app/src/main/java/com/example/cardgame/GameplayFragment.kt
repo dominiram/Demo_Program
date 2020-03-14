@@ -15,8 +15,13 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.squareup.picasso.Picasso
 import com.wajahatkarim3.easyflipview.EasyFlipView
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import okhttp3.*
 import java.io.IOException
+import java.lang.Exception
 
 /**
  * A simple [Fragment] subclass.
@@ -34,6 +39,7 @@ class GameplayFragment : Fragment() {
     private var currentScore = 0
     private var currentCard = -1
     private val TAG = "Fragment gameplay"
+    private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "Created!")
@@ -45,11 +51,13 @@ class GameplayFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         theGameHasEnded = false
-        val rootView = inflater.inflate(R.layout.fragment_gameplay, container,
-            false)
+        val rootView = inflater.inflate(
+            R.layout.fragment_gameplay, container,
+            false
+        )
         instantiateElements(rootView)
 
-        if(arguments != null && arguments!!.getBoolean("ContinueTheGame")) {
+        if (arguments != null && arguments!!.getBoolean("ContinueTheGame")) {
             activity?.getPreferences(Context.MODE_PRIVATE).let {
                 if (it != null) {
                     currentScore = it.getInt(Consts.SAVED_SCORE_KEY, 0)
@@ -58,18 +66,13 @@ class GameplayFragment : Fragment() {
                         .toString()
                     currentImage = it.getString(Consts.SAVED_IMAGE_KEY, "a")
                         .toString()
-                    Log.d(TAG, "current image = $currentImage")
-                    Log.d(TAG, "current score = $currentScore")
-                    Log.d(TAG, "current card = $currentCard")
-                    Log.d(TAG, "deck id = $deckId")
                 }
             }
-                val imgView = rootView?.findViewById<ImageView>(R.id.ivCurrentCard)
-                val tvScore = rootView.findViewById<TextView>(R.id.tvScore)
-                Picasso.get().load(currentImage).into(imgView)
-                tvScore.text = currentScore.toString()
-        }
-        else {
+            val imgView = rootView?.findViewById<ImageView>(R.id.ivCurrentCard)
+            val tvScore = rootView.findViewById<TextView>(R.id.tvScore)
+            Picasso.get().load(currentImage).into(imgView)
+            tvScore.text = currentScore.toString()
+        } else {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
                 it.edit().clear().commit()
             }
@@ -80,21 +83,19 @@ class GameplayFragment : Fragment() {
         return rootView
     }
 
-    private fun instantiateElements(root : View) {
+    private fun instantiateElements(root: View) {
         val tv = root.findViewById<TextView>(R.id.tvScore)
         tv.text = currentScore.toString()
         val ivDeck = root.findViewById<ImageView>(R.id.ivDeckOfCards)
         ivDeck.setImageResource(R.drawable.back_of_a_card)
 
-        val btnH = root.findViewById<Button>(R.id.btnHigher)
-        btnH.setOnClickListener { higherCard(root) }
+        root.findViewById<Button>(R.id.btnHigher).apply {
+            setOnClickListener { drawNewCard(true) { a, b -> a > b } }
+        }
 
-        val btnL = root.findViewById<Button>(R.id.btnLower)
-        btnL.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                lowerCard(root)
-            }
-        })
+        root.findViewById<Button>(R.id.btnLower).apply {
+            setOnClickListener { drawNewCard(true) { a, b -> a < b } }
+        }
     }
 
     private fun createNewDeck(root: View) {
@@ -109,142 +110,25 @@ class GameplayFragment : Fragment() {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if(response.isSuccessful) {
+                if (response.isSuccessful) {
                     val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseNewDeck>(result,
-                        ResponseNewDeck::class.java)
+                    val strRes = Gson().fromJson<ResponseNewDeck>(
+                        result,
+                        ResponseNewDeck::class.java
+                    )
 
                     deckId = strRes.deckId
-                    drawNewCard(deckId, root)
+                    drawNewCard(false) { _, _ -> true }
                     currentScore = 0
                 }
             }
         })
     }
 
-    fun lowerCard(btn : View) {
-        val client = OkHttpClient()
-        val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
-        val request = Request.Builder().url(deckApi).build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if(response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseForNewCard>(result,
-                        ResponseForNewCard::class.java)
-                    val image = strRes.cards[0].image
-                    currentImage = image
-                    val cardValue = strRes.cards[0].value
-                    returnCard = Consts.indexOf(cardValue)
-
-                    val nextCard = returnCard
-                    Log.d(TAG, "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}")
-                    if(nextCard < currentCard) {
-                        currentCard = nextCard
-                        currentScore++
-
-                        activity?.runOnUiThread {
-                            val imgBack = root!!.findViewById<ImageView>(R.id.ivCurrentCardBack)
-                            val imgView = root!!.findViewById<ImageView>(R.id.ivCurrentCard)
-                            val easyFlipView = root!!.findViewById<EasyFlipView>(R.id.easyFlipView)
-
-                            Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
-
-                            easyFlipView.flipDuration=500
-                            easyFlipView.setFlipTypeFromLeft()
-                            easyFlipView.flipTheView(true)
-
-                            easyFlipView.flipDuration=2000
-                            easyFlipView.setFlipTypeFromLeft()
-                            easyFlipView.flipTheView(true)
-
-                            Picasso.get().load(image).into(imgView)
-
-                            val tv = root!!.findViewById<TextView>(R.id.tvScore)
-                            tv.text = currentScore.toString()
-                        }
-                    }
-                    else endGame()
-                    currentCard = nextCard
-                }
-                else {
-                    Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")
-                }
-            }
-        })
-
-    }
-
-    fun higherCard(btn : View) {
-        val client = OkHttpClient()
-        val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
-        val request = Request.Builder().url(deckApi).build()
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if(response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseForNewCard>(result,
-                        ResponseForNewCard::class.java)
-                    val image = strRes.cards[0].image
-                    currentImage = image
-                    val cardValue = strRes.cards[0].value
-                    returnCard = Consts.indexOf(cardValue)
-
-                    val nextCard = returnCard
-                    Log.d(TAG, "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}")
-                    if(nextCard > currentCard) {
-                        currentCard = nextCard
-                        currentScore++
-
-                        activity?.runOnUiThread {
-                            val imgBack = root!!.findViewById<ImageView>(R.id.ivCurrentCardBack)
-                            val imgView = root!!.findViewById<ImageView>(R.id.ivCurrentCard)
-                            val easyFlipView = root!!.findViewById<EasyFlipView>(R.id.easyFlipView)
-
-                            Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
-
-                            easyFlipView.flipDuration=500
-                            easyFlipView.setFlipTypeFromLeft()
-                            easyFlipView.flipTheView(true)
-
-                            easyFlipView.flipDuration=2000
-                            easyFlipView.setFlipTypeFromLeft()
-                            easyFlipView.flipTheView(true)
-
-                            Picasso.get().load(image).into(imgView)
-
-                            val tv = root!!.findViewById<TextView>(R.id.tvScore)
-                            tv.text = currentScore.toString()
-                        }
-                    }
-                    else endGame()
-
-                    currentCard = nextCard
-
-                }
-                else {
-                    Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")
-                }
-            }
-        })
-    }
-
-    fun endGame() {
+    private fun endGame() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
             it.edit().putInt(Consts.SAVED_CARD_KEY, -1).commit()
             it.edit().putInt(Consts.SAVED_SCORE_KEY, 0).commit()
-            Log.d(TAG, "sharedPrefs deleted from endGame")
         }
         theGameHasEnded = true
         val bundle = Bundle()
@@ -257,9 +141,9 @@ class GameplayFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        if(!theGameHasEnded) {
+        if (!theGameHasEnded) {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-                with (it.edit()) {
+                with(it.edit()) {
                     putInt(Consts.SAVED_SCORE_KEY, currentScore)
                     putInt(Consts.SAVED_CARD_KEY, currentCard)
                     putString(Consts.SAVED_DECK_ID, deckId)
@@ -267,11 +151,9 @@ class GameplayFragment : Fragment() {
                     commit()
                 }
             }
-        }
-        else {
+        } else {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
                 it.edit().clear().commit()
-                Log.d(TAG, "sharedPrefs deleted from endGame")
             }
         }
 
@@ -280,7 +162,7 @@ class GameplayFragment : Fragment() {
 
 
     //toDo Put these classes in a separate folder
-    data class ResponseNewDeck (
+    data class ResponseNewDeck(
         @field:SerializedName("success")
         val success: Boolean,
 
@@ -292,7 +174,7 @@ class GameplayFragment : Fragment() {
 
         @field:SerializedName("remaining")
         val remaining: Int
-        )
+    )
 
     data class ResponseForNewCard(
         @field:SerializedName("cards")
@@ -306,7 +188,7 @@ class GameplayFragment : Fragment() {
 
         @field:SerializedName("success")
         val success: Boolean
-        )
+    )
 
     data class CardInfo(
         @field:SerializedName("images")
@@ -335,69 +217,105 @@ class GameplayFragment : Fragment() {
     )
 
 
+    private fun getCardObservable() = Observable.fromCallable {
 
-    private fun drawNewCard(id: String, root: View) {
-        val client = OkHttpClient()
-        val deckApi = "https://deckofcardsapi.com/api/deck/$id/draw/?count=1"
-        val request = Request.Builder().url(deckApi).build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if(response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseForNewCard>(result,
-                        ResponseForNewCard::class.java)
-                    val image = strRes.cards[0].image
-                    currentImage = image
-                    val cardValue = strRes.cards[0].value
-                    currentCard = Consts.indexOf(cardValue)
-                    activity?.runOnUiThread {
-                        val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
-                        Picasso.get().load(image).into(imgView)
-                    }
-                }
-                else {
-                    Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")
-                }
-            }
-        })
-    }
-
-    //toDo I'll probably delete this method
-    private fun callApiForNextCard(root: View): Int {
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
         val request = Request.Builder().url(deckApi).build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FOR NEW CARD FAILED!", e)
-            }
+        var cardInfo: CardInfo? = null
 
-            override fun onResponse(call: Call, response: Response) {
-                if(response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseForNewCard>(result,
-                        ResponseForNewCard::class.java)
-                    val image = strRes.cards[0].image
-                    val cardValue = strRes.cards[0].value
-                    returnCard = Consts.indexOf(cardValue)
+        try {
+            val response = client.newCall(request).execute()
+
+            if (response.isSuccessful) {
+                val result = response.body()!!.string()
+                val strRes = Gson().fromJson<ResponseForNewCard>(
+                    result,
+                    ResponseForNewCard::class.java
+                )
+
+                cardInfo = strRes.cards[0]
+            } else {
+                Log.d(TAG, "Response unsuccessful")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Draw card was unsuccessful due to network request fail")
+        }
+        cardInfo
+    }
+
+    private fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
+        disposable?.dispose()
+        disposable = getCardObservable()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { cardInfo ->
+
+                cardInfo?.apply {
+
+                    currentImage = image
+                    returnCard = Consts.indexOf(value)
+
                     activity?.runOnUiThread {
-                        val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
+
+                        val imgBack = root!!.findViewById<ImageView>(R.id.ivCurrentCardBack)
+                        val imgView = root!!.findViewById<ImageView>(R.id.ivCurrentCard)
+                        val easyFlipView = root!!.findViewById<EasyFlipView>(R.id.easyFlipView)
+
+                        Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
+
+                        easyFlipView.flipDuration = 500
+                        easyFlipView.setFlipTypeFromLeft()
+                        easyFlipView.flipTheView(true)
+
+                        easyFlipView.flipDuration = 2000
+                        easyFlipView.setFlipTypeFromLeft()
+                        easyFlipView.flipTheView(true)
+
                         Picasso.get().load(image).into(imgView)
+
+                        val tv = root!!.findViewById<TextView>(R.id.tvScore)
+                        tv.text = currentScore.toString()
                     }
-                }
-                else {
-                    Log.d(TAG, "RESPONSE FOR NEW CARD IS UNSUCCESSFUL")
+
+                    val nextCard = returnCard
+                    if (shouldCompare) {
+                        if (op(nextCard, currentCard)) {
+                            if (currentCard > nextCard)
+                                Log.d(
+                                    TAG,
+                                    "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}"
+                                )
+                            else
+                                Log.d(
+                                    TAG,
+                                    "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}"
+                                )
+
+                            currentCard = nextCard
+                            currentScore++
+                            activity?.runOnUiThread {
+                                val tvScore = root!!.findViewById<TextView>(R.id.tvScore)
+                                tvScore.text = currentScore.toString()
+                            }
+                        } else {
+                            if (currentCard > nextCard)
+                                Log.d(
+                                    TAG,
+                                    "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}"
+                                )
+                            else
+                                Log.d(
+                                    TAG,
+                                    "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}"
+                                )
+
+                            endGame()
+                        }
+                    }
+                    currentCard = nextCard
                 }
             }
-        })
-        return returnCard
     }
 }

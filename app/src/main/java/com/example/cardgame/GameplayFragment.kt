@@ -41,6 +41,11 @@ class GameplayFragment : Fragment() {
     private val TAG = "Fragment gameplay"
     private var disposable: Disposable? = null
 
+    companion object {
+        const val flipDurationBack = 500
+        const val flipDurationFront = 2000
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "Created!")
         super.onCreate(savedInstanceState)
@@ -162,6 +167,7 @@ class GameplayFragment : Fragment() {
 
 
     //toDo Put these classes in a separate folder
+    // MODELS
     data class ResponseNewDeck(
         @field:SerializedName("success")
         val success: Boolean,
@@ -265,11 +271,11 @@ class GameplayFragment : Fragment() {
 
                         Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
 
-                        easyFlipView.flipDuration = 500
+                        easyFlipView.flipDuration = flipDurationBack
                         easyFlipView.setFlipTypeFromLeft()
                         easyFlipView.flipTheView(true)
 
-                        easyFlipView.flipDuration = 2000
+                        easyFlipView.flipDuration = flipDurationFront
                         easyFlipView.setFlipTypeFromLeft()
                         easyFlipView.flipTheView(true)
 
@@ -282,17 +288,7 @@ class GameplayFragment : Fragment() {
                     val nextCard = returnCard
                     if (shouldCompare) {
                         if (op(nextCard, currentCard)) {
-                            if (currentCard > nextCard)
-                                Log.d(
-                                    TAG,
-                                    "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}"
-                                )
-                            else
-                                Log.d(
-                                    TAG,
-                                    "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}"
-                                )
-
+                            cmpAndLog(currentCard, nextCard)
                             currentCard = nextCard
                             currentScore++
                             activity?.runOnUiThread {
@@ -300,22 +296,25 @@ class GameplayFragment : Fragment() {
                                 tvScore.text = currentScore.toString()
                             }
                         } else {
-                            if (currentCard > nextCard)
-                                Log.d(
-                                    TAG,
-                                    "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}"
-                                )
-                            else
-                                Log.d(
-                                    TAG,
-                                    "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}"
-                                )
-
+                            cmpAndLog(currentCard, nextCard)
                             endGame()
                         }
                     }
                     currentCard = nextCard
                 }
             }
+    }
+
+    private fun cmpAndLog(currentCard: Int, nextCard: Int) {
+        if (currentCard > nextCard)
+            Log.d(
+                TAG,
+                "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}"
+            )
+        else
+            Log.d(
+                TAG,
+                "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}"
+            )
     }
 }

@@ -14,12 +14,11 @@ import com.example.cardgame.utils.Consts
 class MainFragment : Fragment() {
 
     private var root: View? = null
-   var isContinueClickable = false
     private val TAG = "Fragment Main"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d(TAG, "Created!")
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate")
     }
 
     override fun onCreateView(
@@ -39,12 +38,10 @@ class MainFragment : Fragment() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
             if(it.getInt(Consts.SAVED_SCORE_KEY, 0) == 0 ||
                 it.getInt(Consts.SAVED_CARD_KEY, -1) == -1) {
-                Log.d(TAG, "Elementi su instancirani, defoltnim vrednostima")
                 val btnContinue = rootView.findViewById<Button>(R.id.btnContinue)
                 btnContinue?.isClickable = false
             }
             else {
-                Log.d(TAG, "Elementi NEMAJU def. vrednosti")
                 val btnContinue = rootView.findViewById<Button>(R.id.btnContinue)
                 btnContinue?.isClickable = true
             }

@@ -1,14 +1,10 @@
 package com.example.cardgame
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.Toast
-import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_main.*
+import com.example.cardgame.views.GameplayFragment
+import com.example.cardgame.views.MainFragment
 
 class MainActivity : AppCompatActivity() {
 

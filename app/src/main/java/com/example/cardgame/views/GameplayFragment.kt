@@ -1,4 +1,4 @@
-package com.example.cardgame
+package com.example.cardgame.views
 
 import android.content.Context
 import android.os.Bundle
@@ -10,12 +10,12 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import com.example.cardgame.R
 import com.example.cardgame.models.CardInfo
 import com.example.cardgame.models.ResponseForNewCard
 import com.example.cardgame.models.ResponseNewDeck
 import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.squareup.picasso.Picasso
 import com.wajahatkarim3.easyflipview.EasyFlipView
 import io.reactivex.Observable
@@ -216,11 +216,13 @@ class GameplayFragment : Fragment() {
 
                         Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
 
-                        easyFlipView.flipDuration = flipDurationBack
+                        easyFlipView.flipDuration =
+                            flipDurationBack
                         easyFlipView.setFlipTypeFromLeft()
                         easyFlipView.flipTheView(true)
 
-                        easyFlipView.flipDuration = flipDurationFront
+                        easyFlipView.flipDuration =
+                            flipDurationFront
                         easyFlipView.setFlipTypeFromLeft()
                         easyFlipView.flipTheView(true)
 

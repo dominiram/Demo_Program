@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_tv_normal">20dp</dimen>
+    <dimen name="margin_card_normal">30dp</dimen>
+    <dimen name="margin_card_big">50dp</dimen>
+    <dimen name="margin_btb_top">40dp</dimen>
+
+</resources>

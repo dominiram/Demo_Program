@@ -287,34 +287,28 @@ class GameplayFragment : Fragment() {
 
                     val nextCard = returnCard
                     if (shouldCompare) {
+                        cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))
                         if (op(nextCard, currentCard)) {
-                            cmpAndLog(currentCard, nextCard)
                             currentCard = nextCard
                             currentScore++
                             activity?.runOnUiThread {
                                 val tvScore = root!!.findViewById<TextView>(R.id.tvScore)
                                 tvScore.text = currentScore.toString()
                             }
-                        } else {
-                            cmpAndLog(currentCard, nextCard)
+                        } else
                             endGame()
-                        }
                     }
                     currentCard = nextCard
                 }
             }
     }
 
-    private fun cmpAndLog(currentCard: Int, nextCard: Int) {
-        if (currentCard > nextCard)
-            Log.d(
-                TAG,
-                "${Consts.getName(nextCard)} < ${Consts.getName(currentCard)}"
-            )
-        else
-            Log.d(
-                TAG,
-                "${Consts.getName(nextCard)} > ${Consts.getName(currentCard)}"
-            )
+    private fun cmpAndLog(currentCard: Int, nextCard: Int, op: Boolean) {
+        val msg : String? = if(op)
+            "success"
+        else "failure"
+        Log.d(TAG, "current card = ${Consts.getName(currentCard)}")
+        Log.d(TAG, "next card = ${Consts.getName(nextCard)}")
+        Log.d(TAG, "comparison is  a $msg")
     }
 }

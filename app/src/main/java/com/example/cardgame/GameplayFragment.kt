@@ -287,8 +287,7 @@ class GameplayFragment : Fragment() {
 
                     val nextCard = returnCard
                     if (shouldCompare) {
-                        cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))
-                        if (op(nextCard, currentCard)) {
+                        if (cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))) {
                             currentCard = nextCard
                             currentScore++
                             activity?.runOnUiThread {
@@ -303,12 +302,15 @@ class GameplayFragment : Fragment() {
             }
     }
 
-    private fun cmpAndLog(currentCard: Int, nextCard: Int, op: Boolean) {
-        val msg : String? = if(op)
-            "success"
-        else "failure"
+    private fun cmpAndLog(currentCard: Int, nextCard: Int, op: Boolean) : Boolean {
         Log.d(TAG, "current card = ${Consts.getName(currentCard)}")
         Log.d(TAG, "next card = ${Consts.getName(nextCard)}")
-        Log.d(TAG, "comparison is  a $msg")
+        return if(op) {
+            Log.d(TAG, "comparison is  a success")
+            true
+        } else {
+            Log.d(TAG, "comparison is  a failure")
+            false
+        }
     }
 }

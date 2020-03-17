@@ -39,6 +39,9 @@ ext {
     easyFlipViewVersion = '2.1.2'
     rxJavaVersion = '2.1.16'
     rxAndroidVersion = '2.0.2'
+    daggerVersion = '2.13'
+    daggerCompilerVersion = '2.13'
+    lifecycleViewModelVersion = '2.2.0'
 }
 
 task clean(type: Delete) {

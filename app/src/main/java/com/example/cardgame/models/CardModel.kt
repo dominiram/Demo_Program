@@ -2,9 +2,7 @@ package com.example.cardgame.models
 
 import com.google.gson.annotations.SerializedName
 
-//toDo Put these classes in a separate folder
-// MODELS
-data class ResponseNewDeck(
+data class NewDeckResponse(
     @field:SerializedName("success")
     val success: Boolean,
 
@@ -18,7 +16,7 @@ data class ResponseNewDeck(
     val remaining: Int
 )
 
-data class ResponseForNewCard(
+data class NewCardResponse(
     @field:SerializedName("cards")
     val cards: Array<CardInfo>,
 

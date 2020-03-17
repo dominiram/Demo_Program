@@ -12,8 +12,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.example.cardgame.R
 import com.example.cardgame.models.CardInfo
-import com.example.cardgame.models.ResponseForNewCard
-import com.example.cardgame.models.ResponseNewDeck
+import com.example.cardgame.models.NewCardResponse
+import com.example.cardgame.models.NewDeckResponse
 import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
 import com.squareup.picasso.Picasso
@@ -120,9 +120,9 @@ class GameplayFragment : Fragment() {
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
                     val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<ResponseNewDeck>(
+                    val strRes = Gson().fromJson<NewDeckResponse>(
                         result,
-                        ResponseNewDeck::class.java
+                        NewDeckResponse::class.java
                     )
 
                     deckId = strRes.deckId
@@ -181,9 +181,9 @@ class GameplayFragment : Fragment() {
 
             if (response.isSuccessful) {
                 val result = response.body()!!.string()
-                val strRes = Gson().fromJson<ResponseForNewCard>(
+                val strRes = Gson().fromJson<NewCardResponse>(
                     result,
-                    ResponseForNewCard::class.java
+                    NewCardResponse::class.java
                 )
 
                 cardInfo = strRes.cards[0]
@@ -216,13 +216,11 @@ class GameplayFragment : Fragment() {
 
                         Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
 
-                        easyFlipView.flipDuration =
-                            flipDurationBack
+                        easyFlipView.flipDuration = flipDurationBack
                         easyFlipView.setFlipTypeFromLeft()
                         easyFlipView.flipTheView(true)
 
-                        easyFlipView.flipDuration =
-                            flipDurationFront
+                        easyFlipView.flipDuration = flipDurationFront
                         easyFlipView.setFlipTypeFromLeft()
                         easyFlipView.flipTheView(true)
 

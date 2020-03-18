@@ -105,7 +105,6 @@ class GameplayFragment : DaggerFragment() {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
                 it.edit().clear().commit()
             }
-            createNewDeck(rootView)
         }
         root = rootView
 
@@ -126,34 +125,7 @@ class GameplayFragment : DaggerFragment() {
             setOnClickListener { drawNewCard(true) { a, b -> a < b } }
         }
     }
-
-    private fun createNewDeck(root: View) {
-        val client = OkHttpClient()
-        val deckApi = "https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"
-        val request = Request.Builder().url(deckApi).build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FAILED! ", e)
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<NewDeckResponse>(
-                        result,
-                        NewDeckResponse::class.java
-                    )
-
-                    deckId = strRes.deckId
-                    drawNewCard(false) { _, _ -> true }
-                    currentScore = 0
-                }
-            }
-        })
-    }
-
+    
     private fun endGame() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
             it.edit().putInt(Consts.SAVED_CARD_KEY, -1).commit()

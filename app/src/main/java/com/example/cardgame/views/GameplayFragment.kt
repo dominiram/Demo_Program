@@ -105,6 +105,7 @@ class GameplayFragment : DaggerFragment() {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
                 it.edit().clear().commit()
             }
+            drawNewCard(false){ _, _ -> true }
         }
         root = rootView
 

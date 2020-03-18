@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.cardgame.models.CardInfo
 import com.example.cardgame.models.NewCardResponse
 import com.example.cardgame.models.NewDeckResponse
+import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -15,7 +16,7 @@ import java.io.IOException
 import java.lang.Exception
 import javax.inject.Inject
 
-//@Singleton
+//todo make it @Singleton?
 class GameplayViewModel @Inject constructor(
 
 ) : ViewModel() {
@@ -31,8 +32,10 @@ class GameplayViewModel @Inject constructor(
 
     val card = MutableLiveData<NewCardResponse>()
 
+    fun getCardObservable(): Observable<CardInfo?> = Observable.fromCallable {
 
-    fun getCardObservable() = Observable.fromCallable {
+        if(deckId == "" || deckId == " ")
+            createNewDeck()
 
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
@@ -57,32 +60,33 @@ class GameplayViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Draw card was unsuccessful due to network request fail")
         }
+        Log.d(TAG, "card draw = ${cardInfo?.value}")
         cardInfo
     }
 
-    private fun createNewDeck(root: View)  {
+    private fun createNewDeck()  {
         val client = OkHttpClient()
         val deckApi = "https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1"
         val request = Request.Builder().url(deckApi).build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                Log.d(TAG, "REQUEST FAILED! ", e)
+        val response = client.newCall(request).execute()
+        try {
+            if (response.isSuccessful) {
+                val result = response.body()!!.string()
+                val strRes = Gson().fromJson<NewDeckResponse>(
+                    result,
+                    NewDeckResponse::class.java
+                )
+                deckId = strRes.deckId
+                Log.d(TAG, "onResponse-> deck id = $deckId")
+                currentScore = 0
+                //drawNewCard(false) { _, _ -> true }
             }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val result = response.body()!!.string()
-                    val strRes = Gson().fromJson<NewDeckResponse>(
-                        result,
-                        NewDeckResponse::class.java
-                    )
-                    deckId = strRes.deckId
-                    currentScore = 0
-                    //drawNewCard(false) { _, _ -> true }
-                }
+            else {
+                Log.d(TAG, "Response unsuccessful")
             }
-        })
+        } catch (e: Exception) {
+            Log.e(TAG, "Draw card was unsuccessful due to network request fail")
+        }
     }
 }

@@ -51,11 +51,12 @@ class GameplayFragment : DaggerFragment() {
     private var disposable: Disposable? = null
     @Inject
     lateinit var factory: ViewModelFactory
-//    private val viewModel by lazy {
-//        @Suppress("DEPRECATION")
-//        ViewModelProviders.of(this, factory)
-//            .get(GameplayViewModel::class.java)
-//    }
+
+    private val viewModel by lazy {
+        @Suppress("DEPRECATION")
+        ViewModelProviders.of(this, factory)
+            .get(GameplayViewModel::class.java)
+    }
 
     companion object {
         const val flipDurationBack = 500
@@ -187,42 +188,14 @@ class GameplayFragment : DaggerFragment() {
         Log.d(TAG, "onPause")
     }
 
-    private fun getCardObservable() = Observable.fromCallable {
-
-        val client = OkHttpClient()
-        val deckApi = "https://deckofcardsapi.com/api/deck/$deckId/draw/?count=1"
-        val request = Request.Builder().url(deckApi).build()
-
-        var cardInfo: CardInfo? = null
-
-        try {
-            val response = client.newCall(request).execute()
-
-            if (response.isSuccessful) {
-                val result = response.body()!!.string()
-                val strRes = Gson().fromJson<NewCardResponse>(
-                    result,
-                    NewCardResponse::class.java
-                )
-
-                cardInfo = strRes.cards[0]
-            } else {
-                Log.d(TAG, "Response unsuccessful")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Draw card was unsuccessful due to network request fail")
-        }
-        cardInfo
-    }
-
     private fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
         disposable?.dispose()
-        val viewModel by lazy {
-            ViewModelProvider(this, factory).get(GameplayViewModel::class.java)
-        }
+//        val viewModel by lazy {
+//            ViewModelProvider(this, factory).get(GameplayViewModel::class.java)
+//        }
 
         disposable = viewModel.getCardObservable()
-            ?.subscribeOn(Schedulers.io())
+            .subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe { cardInfo ->
 

@@ -10,14 +10,18 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.example.cardgame.R
 import com.example.cardgame.models.CardInfo
 import com.example.cardgame.models.NewCardResponse
 import com.example.cardgame.models.NewDeckResponse
 import com.example.cardgame.utils.Consts
+import com.example.cardgame.viewmodels.GameplayViewModel
 import com.google.gson.Gson
 import com.squareup.picasso.Picasso
 import com.wajahatkarim3.easyflipview.EasyFlipView
+import dagger.android.DaggerFragment
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -25,16 +29,17 @@ import io.reactivex.schedulers.Schedulers
 import okhttp3.*
 import java.io.IOException
 import java.lang.Exception
+import javax.inject.Inject
 
 /**
  * A simple [Fragment] subclass.
  * Use the [GameplayFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class GameplayFragment : Fragment() {
+class GameplayFragment : DaggerFragment() {
 
-    private var theGameHasEnded = false
     private val GAME_SCORE_KEY = "current_game_score"
+    private var theGameHasEnded = false
     private var currentImage = ""
     private var returnCard = -1
     private var root: View? = null
@@ -43,6 +48,13 @@ class GameplayFragment : Fragment() {
     private var currentCard = -1
     private val TAG = "Fragment gameplay"
     private var disposable: Disposable? = null
+    @Inject
+    lateinit var factory: ViewModelProvider.Factory
+//    private val viewModel by lazy {
+//        @Suppress("DEPRECATION")
+//        ViewModelProviders.of(this, factory)
+//            .get(GameplayViewModel::class.java)
+//    }
 
     companion object {
         const val flipDurationBack = 500
@@ -54,10 +66,16 @@ class GameplayFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
+    @Suppress("DEPRECATION")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+//todo
+//        viewModel = factory.create(GameplayViewModel::class.java)
+//        viewModel = ViewModelProviders.of(this, factory).get(GameplayViewModel::class.java)
+
         theGameHasEnded = false
         val rootView = inflater.inflate(
             R.layout.fragment_gameplay, container,
@@ -196,12 +214,16 @@ class GameplayFragment : Fragment() {
         cardInfo
     }
 
+    @Suppress("DEPRECATION")
     private fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
         disposable?.dispose()
-        disposable = getCardObservable()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { cardInfo ->
+        val viewModel by lazy { ViewModelProviders.of(this, factory)
+            .get(GameplayViewModel::class.java) }
+
+        disposable = viewModel.getCardObservable()
+            ?.subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribe { cardInfo ->
 
                 cardInfo?.apply {
 

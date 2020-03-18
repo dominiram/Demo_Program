@@ -3,12 +3,10 @@ package com.example.cardgame
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
 import com.example.cardgame.viewmodels.GameplayViewModel
-import com.example.cardgame.viewmodels.ViewModelProviderFactory
 import com.example.cardgame.views.GameplayFragment
 import com.example.cardgame.views.MainFragment
-import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 

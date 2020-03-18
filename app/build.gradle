@@ -45,4 +45,9 @@ dependencies {
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerCompilerVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleViewModelVersion"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    implementation "com.google.dagger:dagger-android:$daggerCompilerVersion"
+    implementation "com.google.dagger:dagger-android-support:$daggerCompilerVersion"
+    kapt "com.google.dagger:dagger-compiler:$daggerCompilerVersion"
+    kapt "com.google.dagger:dagger-android-processor:$daggerCompilerVersion"
 }

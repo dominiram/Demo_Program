@@ -1,5 +1,6 @@
 package com.example.cardgame.views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -188,13 +189,15 @@ class GameplayFragment : DaggerFragment() {
         Log.d(TAG, "onPause")
     }
 
+    @SuppressLint("CheckResult")
     private fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
-        disposable?.dispose()
+//        disposable?.dispose()
 //        val viewModel by lazy {
 //            ViewModelProvider(this, factory).get(GameplayViewModel::class.java)
 //        }
 
-        disposable = viewModel.getCardObservable()
+        //disposable = viewModel.getCardObservable()
+        viewModel.getCardObservable()
             .subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe { cardInfo ->

@@ -7,8 +7,13 @@ import androidx.lifecycle.ViewModel
 import com.example.cardgame.viewmodels.GameplayViewModel
 import com.example.cardgame.views.GameplayFragment
 import com.example.cardgame.views.MainFragment
+import dagger.android.AndroidInjection
+import dagger.android.AndroidInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasAndroidInjector
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity: AppCompatActivity(), HasAndroidInjector {
 
 //todo
 //    @Inject
@@ -17,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private val manager = supportFragmentManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 // todo
@@ -55,6 +61,13 @@ class MainActivity : AppCompatActivity() {
 
     fun highScores(view: View) {
 
+    }
+
+    @Inject
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+
+    override fun androidInjector(): AndroidInjector<Any> {
+        return dispatchingAndroidInjector
     }
 
 

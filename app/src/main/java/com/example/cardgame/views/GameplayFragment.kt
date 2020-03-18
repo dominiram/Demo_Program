@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.example.cardgame.R
+import com.example.cardgame.ViewModelFactory
 import com.example.cardgame.models.CardInfo
 import com.example.cardgame.models.NewCardResponse
 import com.example.cardgame.models.NewDeckResponse
@@ -21,7 +22,7 @@ import com.example.cardgame.viewmodels.GameplayViewModel
 import com.google.gson.Gson
 import com.squareup.picasso.Picasso
 import com.wajahatkarim3.easyflipview.EasyFlipView
-import dagger.android.DaggerFragment
+import dagger.android.support.DaggerFragment
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -49,7 +50,7 @@ class GameplayFragment : DaggerFragment() {
     private val TAG = "Fragment gameplay"
     private var disposable: Disposable? = null
     @Inject
-    lateinit var factory: ViewModelProvider.Factory
+    lateinit var factory: ViewModelFactory
 //    private val viewModel by lazy {
 //        @Suppress("DEPRECATION")
 //        ViewModelProviders.of(this, factory)
@@ -214,11 +215,11 @@ class GameplayFragment : DaggerFragment() {
         cardInfo
     }
 
-    @Suppress("DEPRECATION")
     private fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
         disposable?.dispose()
-        val viewModel by lazy { ViewModelProviders.of(this, factory)
-            .get(GameplayViewModel::class.java) }
+        val viewModel by lazy {
+            ViewModelProvider(this, factory).get(GameplayViewModel::class.java)
+        }
 
         disposable = viewModel.getCardObservable()
             ?.subscribeOn(Schedulers.io())

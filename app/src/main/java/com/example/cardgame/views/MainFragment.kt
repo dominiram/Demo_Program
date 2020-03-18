@@ -10,8 +10,9 @@ import android.widget.Button
 import androidx.fragment.app.Fragment
 import com.example.cardgame.R
 import com.example.cardgame.utils.Consts
+import dagger.android.support.DaggerFragment
 
-class MainFragment : Fragment() {
+class MainFragment : DaggerFragment() {
 
     private var root: View? = null
     private val TAG = "Fragment Main"

@@ -35,10 +35,10 @@ data class CardInfo(
     val images: ImageData,
 
     @field:SerializedName("image")
-    val image: String,
+    var image: String,
 
     @field:SerializedName("value")
-    val value: String,
+    var value: String,
 
     @field:SerializedName("code")
     val code: String,

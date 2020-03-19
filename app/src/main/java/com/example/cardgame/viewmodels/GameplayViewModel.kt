@@ -18,28 +18,45 @@ import okhttp3.*
 import java.io.IOException
 import java.lang.Exception
 import javax.inject.Inject
+import javax.inject.Singleton
 
 //todo make it @Singleton?
 class GameplayViewModel @Inject constructor(
 
 ) : ViewModel() {
 
+    var prevValue: String? = null
     private val TAG = "GameplayViewModel"
-//    private var disposable: Disposable? = null
-//    private var theGameHasEnded = false
-//    private var currentImage = ""
-//    private var returnCard = -1
-    private var deckId = ""
-    private var currentScore = 0
+    private val gameHasEnded = MutableLiveData<Boolean>()
+    val gameHasEndedGetter: LiveData<Boolean>
+        get() = gameHasEnded
+    var deckId = ""
+    var score: Int = 0
+    private var currentScore = MutableLiveData<Int>()
+    val currentScoreGetter: LiveData<Int>
+        get() = currentScore
     private var disposable: Disposable? = null
-//    private var currentCard = -1
-
-    var prevCard : CardInfo? = null
-    private val card = MutableLiveData<CardInfo>()
-    val cardInfo: LiveData<CardInfo>
+    private var card = MutableLiveData<CardInfo>()
+    val cardGetter: LiveData<CardInfo>
         get() = card
 
-    fun getCardObservable(): Observable<CardInfo?> = Observable.fromCallable {
+    fun setCardValue(card: Int) {
+        Log.d(TAG, "card = ${Consts.getName(card)}")
+        //toDo NE UPISUJE VREDNOST U OVO ISPOD
+        this.card.value?.value = Consts.getName(card)
+        Log.d(TAG, "card.value.value = ${this.card.value?.value}")
+    }
+
+    fun setCardImage(card: String) {
+        this.card.value?.image = card
+    }
+
+    fun setCurrentScore(score: Int) {
+        this.score = score
+        this.currentScore.value = score
+    }
+
+    private fun getCardObservable(): Observable<CardInfo?> = Observable.fromCallable {
 
         if(deckId == "" || deckId == " ")
             createNewDeck()
@@ -66,8 +83,6 @@ class GameplayViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Draw card was unsuccessful due to network request fail")
         }
-        Log.d(TAG, "card drawn = ${cardInfo?.value}")
-
         cardInfo
     }
 
@@ -86,8 +101,6 @@ class GameplayViewModel @Inject constructor(
                 )
                 deckId = strRes.deckId
                 Log.d(TAG, "onResponse-> deck id = $deckId")
-                currentScore = 0
-                //drawNewCard(false) { _, _ -> true }
             }
             else {
                 Log.d(TAG, "Response unsuccessful")
@@ -97,31 +110,32 @@ class GameplayViewModel @Inject constructor(
         }
     }
 
-    fun drawNewCard() : LiveData<CardInfo> {
+    fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
         disposable?.dispose()
         disposable = getCardObservable()
             .subscribeOn(Schedulers.io())
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe {
                 it?.apply {
-                    //TODO OVA VRENOST NEXT CARD NIJE ISTA KAO ONA PRE RETURN-a
-                    prevCard = card.value
+                    Log.d(TAG, "BEFORE CMP: current card = $prevValue, " +
+                            "next card = ${card.value?.value}")
+
+                    //todo Posle resume-a se value ne upise u card??
+                    prevValue = card.value?.value
                     card.value = it
-                    Log.d(TAG, "current card = ${prevCard?.value}")
-                    Log.d(TAG, "next card = ${card.value?.value}")
+                    if(shouldCompare) {
+                        Log.d(TAG, "COMPARING: current card = $prevValue, " +
+                                "next card = ${card.value?.value}")
+                        if(op(Consts.indexOf(card.value!!.value),
+                                Consts.indexOf(prevValue!!))){
+                            score++
+                            currentScore.value = score
+                        }
+                        else
+                            gameHasEnded.value = false
+                    }
                 }
             }
-        Log.d(TAG, "next card, BEFORE RETURN = ${card.value?.value}")
-        return card
     }
-//    fun drawCardWithParameters(shouldCompare: Boolean, op:(Int, Int) -> Boolean) {
-//        if (shouldCompare) {
-//            if (cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))) {
-//                currentCard = nextCard
-//                currentScore++
-//            } else
-//                endGame()
-//        }
-//    }
 
 }

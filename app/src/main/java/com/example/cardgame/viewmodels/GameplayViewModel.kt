@@ -2,6 +2,7 @@ package com.example.cardgame.viewmodels
 
 import android.util.Log
 import android.view.View
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.cardgame.models.CardInfo
@@ -10,7 +11,9 @@ import com.example.cardgame.models.NewDeckResponse
 import com.example.cardgame.utils.Consts
 import com.google.gson.Gson
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import okhttp3.*
 import java.io.IOException
 import java.lang.Exception
@@ -28,9 +31,13 @@ class GameplayViewModel @Inject constructor(
 //    private var returnCard = -1
     private var deckId = ""
     private var currentScore = 0
+    private var disposable: Disposable? = null
 //    private var currentCard = -1
 
-    val card = MutableLiveData<NewCardResponse>()
+    var prevCard : CardInfo? = null
+    private val card = MutableLiveData<CardInfo>()
+    val cardInfo: LiveData<CardInfo>
+        get() = card
 
     fun getCardObservable(): Observable<CardInfo?> = Observable.fromCallable {
 
@@ -52,7 +59,6 @@ class GameplayViewModel @Inject constructor(
                     result,
                     NewCardResponse::class.java
                 )
-
                 cardInfo = strRes.cards[0]
             } else {
                 Log.d(TAG, "Response unsuccessful")
@@ -60,7 +66,8 @@ class GameplayViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Draw card was unsuccessful due to network request fail")
         }
-        Log.d(TAG, "card draw = ${cardInfo?.value}")
+        Log.d(TAG, "card drawn = ${cardInfo?.value}")
+
         cardInfo
     }
 
@@ -89,4 +96,32 @@ class GameplayViewModel @Inject constructor(
             Log.e(TAG, "Draw card was unsuccessful due to network request fail")
         }
     }
+
+    fun drawNewCard() : LiveData<CardInfo> {
+        disposable?.dispose()
+        disposable = getCardObservable()
+            .subscribeOn(Schedulers.io())
+            ?.observeOn(AndroidSchedulers.mainThread())
+            ?.subscribe {
+                it?.apply {
+                    //TODO OVA VRENOST NEXT CARD NIJE ISTA KAO ONA PRE RETURN-a
+                    prevCard = card.value
+                    card.value = it
+                    Log.d(TAG, "current card = ${prevCard?.value}")
+                    Log.d(TAG, "next card = ${card.value?.value}")
+                }
+            }
+        Log.d(TAG, "next card, BEFORE RETURN = ${card.value?.value}")
+        return card
+    }
+//    fun drawCardWithParameters(shouldCompare: Boolean, op:(Int, Int) -> Boolean) {
+//        if (shouldCompare) {
+//            if (cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))) {
+//                currentCard = nextCard
+//                currentScore++
+//            } else
+//                endGame()
+//        }
+//    }
+
 }

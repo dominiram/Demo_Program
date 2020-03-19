@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.example.cardgame.R
@@ -49,7 +51,6 @@ class GameplayFragment : DaggerFragment() {
     private var currentScore = 0
     private var currentCard = -1
     private val TAG = "Fragment gameplay"
-    private var disposable: Disposable? = null
     @Inject
     lateinit var factory: ViewModelFactory
 
@@ -74,10 +75,6 @@ class GameplayFragment : DaggerFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-//todo
-//        viewModel = factory.create(GameplayViewModel::class.java)
-//        viewModel = ViewModelProviders.of(this, factory).get(GameplayViewModel::class.java)
 
         theGameHasEnded = false
         val rootView = inflater.inflate(
@@ -105,7 +102,7 @@ class GameplayFragment : DaggerFragment() {
             activity?.getPreferences(Context.MODE_PRIVATE)?.let {
                 it.edit().clear().commit()
             }
-            drawNewCard(false){ _, _ -> true }
+            drawCard(false){ _, _ -> true }
         }
         root = rootView
 
@@ -118,12 +115,41 @@ class GameplayFragment : DaggerFragment() {
         val ivDeck = root.findViewById<ImageView>(R.id.ivDeckOfCards)
         ivDeck.setImageResource(R.drawable.back_of_a_card)
 
+        viewModel.cardInfo.observe(viewLifecycleOwner, Observer {
+            card ->
+            run {
+                currentImage = card.image
+                returnCard = Consts.indexOf(card.value)
+
+                activity?.runOnUiThread {
+                    val imgBack = root.findViewById<ImageView>(R.id.ivCurrentCardBack)
+                    val imgView = root.findViewById<ImageView>(R.id.ivCurrentCard)
+                    val easyFlipView = root.findViewById<EasyFlipView>(R.id.easyFlipView)
+
+                    Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
+
+                    easyFlipView.flipDuration = flipDurationBack
+                    easyFlipView.setFlipTypeFromLeft()
+                    easyFlipView.flipTheView(true)
+
+                    easyFlipView.flipDuration = flipDurationFront
+                    easyFlipView.setFlipTypeFromLeft()
+                    easyFlipView.flipTheView(true)
+
+                    Picasso.get().load(currentImage).into(imgView)
+
+                    val tv = root.findViewById<TextView>(R.id.tvScore)
+                    tv.text = currentScore.toString()
+                }
+            }
+        })
+
         root.findViewById<Button>(R.id.btnHigher).apply {
-            setOnClickListener { drawNewCard(true) { a, b -> a > b } }
+            setOnClickListener { drawCard(true) { a, b -> a > b } }
         }
 
         root.findViewById<Button>(R.id.btnLower).apply {
-            setOnClickListener { drawNewCard(true) { a, b -> a < b } }
+            setOnClickListener { drawCard(true) { a, b -> a < b } }
         }
     }
     
@@ -162,13 +188,81 @@ class GameplayFragment : DaggerFragment() {
         Log.d(TAG, "onPause")
     }
 
+//    private fun dc(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
+//        viewModel.drawCardWithParameters(shouldCompare, op)
+//    }
+
+
+    private fun drawCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
+
+        //todo POREDI UVEK ISTE KARTE
+//        val card: LiveData<CardInfo> = viewModel.drawNewCard()
+//        card.observe(viewLifecycleOwner, Observer {
+//            currentImage = card.value!!.image
+//            returnCard = Consts.indexOf(card.value!!.value)
+//
+//            activity?.runOnUiThread {
+//
+//                val imgBack = root!!.findViewById<ImageView>(R.id.ivCurrentCardBack)
+//                val imgView = root!!.findViewById<ImageView>(R.id.ivCurrentCard)
+//                val easyFlipView = root!!.findViewById<EasyFlipView>(R.id.easyFlipView)
+//
+//                Picasso.get().load(R.drawable.back_of_a_card).into(imgBack)
+//
+//                easyFlipView.flipDuration = flipDurationBack
+//                easyFlipView.setFlipTypeFromLeft()
+//                easyFlipView.flipTheView(true)
+//
+//                easyFlipView.flipDuration = flipDurationFront
+//                easyFlipView.setFlipTypeFromLeft()
+//                easyFlipView.flipTheView(true)
+//
+//                Picasso.get().load(currentImage).into(imgView)
+//
+//                val tv = root!!.findViewById<TextView>(R.id.tvScore)
+//                tv.text = currentScore.toString()
+//            }
+//
+//            val nextCard = returnCard
+//            if (shouldCompare) {
+//                if (cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))) {
+//                    currentCard = nextCard
+//                    currentScore++
+//                    activity?.runOnUiThread {
+//                        val tvScore = root!!.findViewById<TextView>(R.id.tvScore)
+//                        tvScore.text = currentScore.toString()
+//                    }
+//                } else
+//                    endGame()
+//            }
+//            currentCard = nextCard
+//        })
+
+        val nextCardInfo = viewModel.drawNewCard().value?.value
+        val currentCardInfo = viewModel.prevCard?.value
+        if (nextCardInfo != null && currentCardInfo != null) {
+        val nextCard = Consts.indexOf(nextCardInfo)
+        val currentCard = Consts.indexOf(currentCardInfo)
+            if (shouldCompare) {
+                if (cmpAndLog(currentCard, nextCard, op(nextCard, currentCard))) {
+                    currentScore++
+                    activity?.runOnUiThread {
+                        val tvScore = root!!.findViewById<TextView>(R.id.tvScore)
+                        tvScore.text = currentScore.toString()
+                    }
+                } else
+                    endGame()
+            }
+        }
+    }
+
+
     @SuppressLint("CheckResult")
     private fun drawNewCard(shouldCompare: Boolean, op: (Int, Int) -> Boolean) {
 //        disposable?.dispose()
 //        val viewModel by lazy {
 //            ViewModelProvider(this, factory).get(GameplayViewModel::class.java)
 //        }
-
         //disposable = viewModel.getCardObservable()
         viewModel.getCardObservable()
             .subscribeOn(Schedulers.io())
@@ -231,3 +325,4 @@ class GameplayFragment : DaggerFragment() {
         }
     }
 }
+

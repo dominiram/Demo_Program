@@ -32,6 +32,7 @@ class GameplayViewModel @Inject constructor(
         get() = gameHasEnded
     var deckId = ""
     var score: Int = 0
+    var prevCard: CardInfo? = null
     private var currentScore = MutableLiveData<Int>()
     val currentScoreGetter: LiveData<Int>
         get() = currentScore
@@ -40,11 +41,9 @@ class GameplayViewModel @Inject constructor(
     val cardGetter: LiveData<CardInfo>
         get() = card
 
-    fun setCardValue(card: Int) {
-        Log.d(TAG, "card = ${Consts.getName(card)}")
-        //toDo NE UPISUJE VREDNOST U OVO ISPOD
-        this.card.value?.value = Consts.getName(card)
-        Log.d(TAG, "card.value.value = ${this.card.value?.value}")
+    fun setWholeCardInfo(card: CardInfo) {
+        this.card.value = card
+        Log.d(TAG, "setWholeCard value = ${this.card.value?.value}")
     }
 
     fun setCardImage(card: String) {
@@ -120,14 +119,13 @@ class GameplayViewModel @Inject constructor(
                     Log.d(TAG, "BEFORE CMP: current card = $prevValue, " +
                             "next card = ${card.value?.value}")
 
-                    //todo Posle resume-a se value ne upise u card??
-                    prevValue = card.value?.value
+                    prevCard = card.value
                     card.value = it
                     if(shouldCompare) {
                         Log.d(TAG, "COMPARING: current card = $prevValue, " +
                                 "next card = ${card.value?.value}")
                         if(op(Consts.indexOf(card.value!!.value),
-                                Consts.indexOf(prevValue!!))){
+                                Consts.indexOf(prevCard!!.value))){
                             score++
                             currentScore.value = score
                         }

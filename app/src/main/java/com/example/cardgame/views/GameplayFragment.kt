@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.cardgame.R
 import com.example.cardgame.ViewModelFactory
 import com.example.cardgame.models.CardInfo
+import com.example.cardgame.models.ImageData
 import com.example.cardgame.models.NewCardResponse
 import com.example.cardgame.models.NewDeckResponse
 import com.example.cardgame.utils.Consts
@@ -95,12 +96,19 @@ class GameplayFragment : DaggerFragment() {
 
                     Log.d(TAG, "currentScore = $currentScore, currentCard = $currentCard," +
                             "currentImage = $currentImage, deckId = $deckId")
+                    val suite = it.getString("cardInfo1", "suite")
+                    val code = it.getString("cardInfo2", "code")
+                    val imagepng = it.getString("cardInfo3", "imagespng")
+                    val imagesvg = it.getString("cardInfo4", "imagessvg")
 
-                    //todo value se ne upisuje lepo u card?
+                    val cardInfo = CardInfo(ImageData(imagesvg!!, imagepng!!), currentImage,
+                        Consts.getName(currentCard), code!!, suite!!)
+                    Log.d(TAG, "cardInfo = $cardInfo")
+
+                    viewModel.setWholeCardInfo(cardInfo)
                     viewModel.setCurrentScore(currentScore)
                     viewModel.deckId = deckId
                     viewModel.setCardImage(currentImage)
-                    viewModel.setCardValue(currentCard)
                     Log.d(TAG, "card value = ${viewModel.cardGetter.value?.value}")
                 }
             }

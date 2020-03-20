@@ -20,16 +20,15 @@ import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
 
-//todo make it @Singleton?
 class GameplayViewModel @Inject constructor(
 
 ) : ViewModel() {
 
     var prevValue: String? = null
     private val TAG = "GameplayViewModel"
-    private val gameHasEnded = MutableLiveData<Boolean>()
+    private val _gameHasEnded = MutableLiveData<Boolean>()
     val gameHasEndedGetter: LiveData<Boolean>
-        get() = gameHasEnded
+        get() = _gameHasEnded
     var deckId = ""
     var score: Int = 0
     var prevCard: CardInfo? = null
@@ -37,17 +36,17 @@ class GameplayViewModel @Inject constructor(
     val currentScoreGetter: LiveData<Int>
         get() = currentScore
     private var disposable: Disposable? = null
-    private var card = MutableLiveData<CardInfo>()
+    private var _card = MutableLiveData<CardInfo>()
     val cardGetter: LiveData<CardInfo>
-        get() = card
+        get() = _card
 
     fun setWholeCardInfo(card: CardInfo) {
-        this.card.value = card
-        Log.d(TAG, "setWholeCard value = ${this.card.value?.value}")
+        this._card.value = card
+        Log.d(TAG, "setWholeCard value = ${this._card.value?.value}")
     }
 
     fun setCardImage(card: String) {
-        this.card.value?.image = card
+        this._card.value?.image = card
     }
 
     fun setCurrentScore(score: Int) {
@@ -116,21 +115,18 @@ class GameplayViewModel @Inject constructor(
             ?.observeOn(AndroidSchedulers.mainThread())
             ?.subscribe {
                 it?.apply {
-                    Log.d(TAG, "BEFORE CMP: current card = $prevValue, " +
-                            "next card = ${card.value?.value}")
-
-                    prevCard = card.value
-                    card.value = it
+                    prevCard = _card.value
+                    _card.value = it
                     if(shouldCompare) {
-                        Log.d(TAG, "COMPARING: current card = $prevValue, " +
-                                "next card = ${card.value?.value}")
-                        if(op(Consts.indexOf(card.value!!.value),
+                        Log.d(TAG, "COMPARING: current card = ${prevCard?.value}, " +
+                                "next card = ${_card.value?.value}")
+                        if(op(Consts.indexOf(_card.value!!.value),
                                 Consts.indexOf(prevCard!!.value))){
                             score++
                             currentScore.value = score
                         }
                         else
-                            gameHasEnded.value = false
+                            _gameHasEnded.value = false
                     }
                 }
             }

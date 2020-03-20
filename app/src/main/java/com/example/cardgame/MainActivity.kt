@@ -1,20 +1,24 @@
 package com.example.cardgame
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.Toast
-import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_main.*
+import androidx.lifecycle.ViewModel
+import com.example.cardgame.viewmodels.GameplayViewModel
+import com.example.cardgame.views.GameplayFragment
+import com.example.cardgame.views.MainFragment
+import dagger.android.AndroidInjection
+import dagger.android.AndroidInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasAndroidInjector
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity: AppCompatActivity(), HasAndroidInjector {
 
     private val manager = supportFragmentManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -51,6 +55,13 @@ class MainActivity : AppCompatActivity() {
 
     fun highScores(view: View) {
 
+    }
+
+    @Inject
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+
+    override fun androidInjector(): AndroidInjector<Any> {
+        return dispatchingAndroidInjector
     }
 
 

@@ -1,7 +1,6 @@
-package com.example.cardgame
+package com.example.cardgame.views
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import com.example.cardgame.R
 import com.example.cardgame.utils.Consts
+import dagger.android.support.DaggerFragment
 
-class MainFragment : Fragment() {
+class MainFragment : DaggerFragment() {
 
     private var root: View? = null
     private val TAG = "Fragment Main"
@@ -26,7 +27,8 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val rootView = inflater.inflate(R.layout.fragment_main, container,
+        val rootView = inflater.inflate(
+            R.layout.fragment_main, container,
             false)
         instantiateElements(rootView)
         root = rootView

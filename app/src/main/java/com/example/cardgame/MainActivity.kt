@@ -15,18 +15,12 @@ import javax.inject.Inject
 
 class MainActivity: AppCompatActivity(), HasAndroidInjector {
 
-//todo
-//    @Inject
-//    private var providerFactory : ViewModelProviderFactory? = null
-//    private var gameplayViewModel : GameplayViewModel? = null
     private val manager = supportFragmentManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-// todo
-//        gameplayViewModel = ViewModelProvider(this)[GameplayViewModel::class.java]
 
         val transaction = manager.beginTransaction()
         val fragment = MainFragment()

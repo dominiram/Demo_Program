@@ -16,5 +16,5 @@ interface ScoreDAO {
     fun delete(score: Score)
 
     @Query("SELECT * FROM score_table ORDER BY position")
-    fun getAllScores() : LiveData<List<Score>>
+    fun getAllScores() : List<Score>
 }

@@ -14,6 +14,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.IntegerRes
 import androidx.core.text.parseAsHtml
+import androidx.lifecycle.ViewModelProvider
+import com.example.cardgame.utils.Score
+import com.example.cardgame.utils.ScoreViewModel
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.squareup.picasso.Picasso
@@ -261,19 +264,26 @@ class GameplayFragment : Fragment() {
 
     fun endGame() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            it.edit().putInt(getString(R.string.saved_card_key), -1)
-            it.edit().putInt(getString(R.string.saved_score_key), 0)
-            it.edit().commit()
-//            it.edit().clear().commit()
+//            it.edit().putInt(getString(R.string.saved_card_key), -1).commit()
+//            it.edit().putInt(getString(R.string.saved_score_key), 0).commit()
+            it.edit().clear().commit()
             Log.d(TAG, "sharedPrefs deleted from endGame")
         }
         theGameHasEnded = true
+//        currentScore = viewModel.currentScoreGetter
         val bundle = Bundle()
         bundle.putInt(GAME_SCORE_KEY, currentScore)
 
+        val highScoresViewModel by lazy {
+            ViewModelProvider(this).get(ScoreViewModel::class.java)
+        }
+        //todo call high score fragment, pass it current score and ask for its name
+        // if current score is in the top 10
+        if(highScoresViewModel.isScoreInTopTen(currentScore)) {
+            //todo call high score fragment
+            // else just return to main activity
+        }
         activity?.supportFragmentManager?.popBackStack()
-        //toDo
-        // Ako je u top 10 skorova sacuvaj ga!
     }
 
     override fun onPause() {

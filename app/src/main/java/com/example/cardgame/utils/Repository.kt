@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 
 class Repository {
     private var scoreDAO: ScoreDAO? = null
-    private var allScores: LiveData<List<Score>>? = null
+    private var allScores: List<Score>? = null
 
     constructor(application: Application) {
         var db: DB? = DB.getInstance(application)
@@ -23,7 +23,7 @@ class Repository {
         DeleteScoreAT(scoreDAO).execute(score)
     }
 
-    fun getAllScores(): LiveData<List<Score>>? {
+    fun getAllScores(): List<Score>? {
         return allScores
     }
 
